@@ -1,0 +1,69 @@
+Private Sub Worksheet_Change(ByVal Target As Range)
+    ' H3:H100 범위에 값이 변경되었을 때만 실행
+    If Not Intersect(Target, Range("H3:H100")) Is Nothing Then
+        Dim total As Integer ' H셀 값
+        Dim num1 As Integer, num2 As Integer, num3 As Integer, num4 As Integer
+        Dim minVals(1 To 4) As Integer, maxVals(1 To 4) As Integer ' 각 열 최소/최대 값
+        Dim rowNum As Integer ' 변경된 행 번호
+        Dim sum As Integer ' D, E, F, G의 합
+        Dim count As Long ' 반복 횟수 카운트
+        
+        ' 이벤트 중첩 방지
+        Application.EnableEvents = False
+        
+        ' 변경된 셀의 행 번호 가져오기
+        rowNum = Target.Row
+        
+        ' H셀의 값 가져오기
+        total = Target.Value
+        
+        ' 각 열(D, E, F, G)의 최소~최대 값 설정
+        minVals(1) = 0: maxVals(1) = 25 ' D열 (5 ~ 25)
+        minVals(2) = 0: maxVals(2) = 25 ' E열 (5 ~ 25)
+        minVals(3) = 0: maxVals(3) = 25 ' F열 (5 ~ 25)
+        minVals(4) = 0: maxVals(4) = 25 ' G열 (5 ~ 25)
+        
+        ' sum 초기화
+        sum = 0
+        count = 0 ' 반복 횟수 초기화
+        
+        ' 랜덤 값을 생성하면서 합이 H셀과 일치하도록 조정
+        Do While sum <> total
+            ' 랜덤 값 생성 (범위 내에서 값을 생성하도록 수정)
+            Randomize
+            num1 = Int((maxVals(1) - minVals(1) + 1) * Rnd + minVals(1))
+            num2 = Int((maxVals(2) - minVals(2) + 1) * Rnd + minVals(2))
+            num3 = Int((maxVals(3) - minVals(3) + 1) * Rnd + minVals(3))
+
+            ' num4 계산 (H셀 값에서 num1, num2, num3 합을 뺀 값)
+            num4 = total - (num1 + num2 + num3)
+
+            ' num4가 범위 내에 있는지 확인
+            If num4 >= minVals(4) And num4 <= maxVals(4) Then
+                sum = num1 + num2 + num3 + num4 ' 합 계산
+                ' 합이 맞으면 종료
+                Exit Do
+            End If
+
+            ' 반복 횟수 카운트
+            count = count + 1
+
+            ' 10000번 이상 반복되면 종료
+            If count > 1000000 Then
+                MsgBox "알맞은 값 찾기에 실패하였습니다. 다시 시도해주십시오.", vbExclamation
+                Exit Do
+            End If
+        Loop
+        
+        ' 합이 맞으면 값을 입력
+        If sum = total Then
+            Cells(rowNum, 4).Value = num1 ' D열
+            Cells(rowNum, 5).Value = num2 ' E열
+            Cells(rowNum, 6).Value = num3 ' F열
+            Cells(rowNum, 7).Value = num4 ' G열
+        End If
+        
+        ' 이벤트 활성화
+        Application.EnableEvents = True
+    End If
+End Sub
